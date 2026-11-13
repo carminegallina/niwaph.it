@@ -1,0 +1,75 @@
+# NIWA.PH — Protezione root del sito
+
+# === HTTPS forzato ===
+# Forza il redirect a HTTPS. Aruba di solito ha già il certificato SSL.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# === Blocco file privati ===
+# File che iniziano con underscore = privati (diagnostica, schema, etc.)
+<FilesMatch "^_">
+    Require all denied
+</FilesMatch>
+
+# File SQL: schemi, dump, dati sensibili
+<FilesMatch "\.sql$">
+    Require all denied
+</FilesMatch>
+
+# File markdown: documentazione interna
+<FilesMatch "\.md$">
+    Require all denied
+</FilesMatch>
+
+# File di backup/swap accidentali
+<FilesMatch "\.(bak|backup|swp|swo|tmp|orig|save|log|~)$">
+    Require all denied
+</FilesMatch>
+
+# === No directory listing ===
+Options -Indexes
+
+# === Charset ===
+AddDefaultCharset UTF-8
+
+# === Security headers ===
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    # Permessi browser API ristretti — niente camera/microfono/geolocazione
+    Header set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+</IfModule>
+
+# === Compressione ===
+# Comprimi testo/CSS/JS per ridurre banda
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/json application/xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# === Cache statici ===
+# Cache immagini e asset per ridurre carico server
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType video/mp4 "access plus 30 days"
+    ExpiresByType text/css "access plus 1 day"
+    ExpiresByType application/javascript "access plus 1 day"
+</IfModule>
+
+# Niente cache per gli endpoint API (sono dinamici)
+# NB: thumb.php si auto-dichiara cacheabile e sovrascrive questa regola.
+<FilesMatch "\.(php)$">
+    <IfModule mod_headers.c>
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    </IfModule>
+</FilesMatch>

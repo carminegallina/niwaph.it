@@ -1,0 +1,45 @@
+# NIWA.PH — Protezione cartella /api/
+#
+# Blocca l'accesso diretto via HTTP ai file di supporto/privati.
+# Gli endpoint pubblici (categories.php, media.php, ecc.) restano accessibili.
+
+# File che iniziano con underscore = privati
+<FilesMatch "^_">
+    Require all denied
+</FilesMatch>
+
+# File SQL non vanno mai serviti
+<FilesMatch "\.sql$">
+    Require all denied
+</FilesMatch>
+
+# File markdown non vanno mai serviti
+<FilesMatch "\.md$">
+    Require all denied
+</FilesMatch>
+
+# Nasconde le versioni dei backup/swap che FTP a volte lascia
+<FilesMatch "\.(bak|backup|swp|swo|tmp|orig|save|~)$">
+    Require all denied
+</FilesMatch>
+
+# Niente directory listing
+Options -Indexes
+
+# Forza UTF-8 nelle risposte
+AddDefaultCharset UTF-8
+
+# Headers di sicurezza
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# thumb.php serve immagini, non JSON: deve restare cacheabile nonostante
+# la regola "no-store" per i .php nel .htaccess di root.
+<Files "thumb.php">
+    <IfModule mod_headers.c>
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </IfModule>
+</Files>

@@ -1,0 +1,19 @@
+# NIWA.PH — Protezione cartella /api/admin/
+#
+# Le regole generali (HTTPS, security headers, compressione, cache) stanno
+# nel .htaccess di root. Qui solo ciò che riguarda questa cartella.
+
+# File che iniziano con underscore = privati (_session.php)
+<FilesMatch "^_">
+    Require all denied
+</FilesMatch>
+
+# File SQL / markdown / backup non vanno mai serviti
+<FilesMatch "\.(sql|md|bak|backup|swp|swo|tmp|orig|save|log|~)$">
+    Require all denied
+</FilesMatch>
+
+# Niente directory listing
+Options -Indexes
+
+AddDefaultCharset UTF-8

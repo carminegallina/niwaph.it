@@ -1,0 +1,15 @@
+# Credenziali del database
+api/_secrets.php
+
+# Media caricati dal pannello admin: 260 MB di foto e video, non vanno in git.
+uploads/photos/*
+uploads/videos/*
+!uploads/**/.gitkeep
+
+# Dump del database: contiene hash password, sessioni e messaggi di contatto.
+# Dello schema invece ne teniamo una copia senza dati.
+db/*
+!db/schema.sql
+
+# Copia di lavoro per il caricamento FTP
+_da-caricare/

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Niwa.ph — Carmine, fotografo</title>
+<meta name="description" content="Niwa.ph — il portfolio fotografico di Carmine. Eventi, paesaggi, food, animali. Mercato San Severino, Italia.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+</head>
+<body>
+<div id="root"></div>
+<div class="noise"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="data.js"></script>
+<script type="text/babel" src="app-core.jsx"></script>
+<script type="text/babel" src="app-shell.jsx"></script>
+<script type="text/babel" src="app-pages.jsx"></script>
+<script type="text/babel" src="app-admin.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+/* ---- Error boundary di sicurezza ----
+   Se uno qualsiasi dei componenti dell'albero lancia un'eccezione durante
+   il render, invece di lasciare lo schermo nero/marrone mostriamo un
+   messaggio utile con il dettaglio dell'errore e un bottone per ricaricare.
+   In dev (development) React stesso prova a recuperare; questo è il
+   livello di fallback finale. */
+class NiwaErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  componentDidCatch(error, info) {
+    // Log esplicito in console per facilitare il debug in produzione
+    console.error("NiwaErrorBoundary caught:", error, info);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{
+          minHeight: "100vh", padding: "32px 24px",
+          display: "grid", placeItems: "center",
+          fontFamily: "system-ui, sans-serif",
+          background: "var(--bg, #1a1410)", color: "var(--fg, #f0e8dc)"
+        }}>
+          <div style={{ maxWidth: 560, textAlign: "center" }}>
+            <h1 style={{ fontSize: 28, marginBottom: 12 }}>Oops — il sito ha incontrato un errore.</h1>
+            <p style={{ opacity: 0.8, marginBottom: 18, lineHeight: 1.5 }}>
+              Apri la console del browser per vedere il dettaglio. Spesso basta ricaricare,
+              oppure verificare che il backend PHP/DB sia raggiungibile.
+            </p>
+            <pre style={{
+              textAlign: "left", padding: 14, background: "rgba(0,0,0,0.3)",
+              borderRadius: 8, fontSize: 12, overflow: "auto", maxHeight: 200,
+              marginBottom: 18
+            }}>
+              {String(this.state.error?.message || this.state.error)}
+            </pre>
+            <button onClick={() => window.location.reload()}
+                    style={{ padding: "10px 20px", fontSize: 14, cursor: "pointer",
+                             background: "#c2845a", color: "#fff", border: "none",
+                             borderRadius: 6 }}>
+              Ricarica la pagina
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function App() {
+  const { route } = useRouter();
+  const [introDone, setIntroDone] = useState(() => {
+    return sessionStorage.getItem("niwa.introDone") === "1";
+  });
+
+  useEffect(() => {
+    if (introDone) sessionStorage.setItem("niwa.introDone", "1");
+  }, [introDone]);
+
+  let Page;
+  switch (route) {
+    case "photos":  Page = <GalleryPage kind="photo" />; break;
+    case "videos":  Page = <GalleryPage kind="video" />; break;
+    case "about":   Page = <AboutPage />; break;
+    case "contact": Page = <ContactPage />; break;
+    case "admin":   Page = <AdminPage />; break;
+    case "admin-password-reset": Page = <AdminPasswordResetPage />; break;
+    default:        Page = <HomePage />; break;
+  }
+
+  return (
+    <div className="app" data-screen-label={"00 " + route}>
+      {!introDone && route === "home" && <Intro onDone={() => setIntroDone(true)} />}
+      <Nav />
+      <main className="page" key={route}>
+        {Page}
+      </main>
+      {route !== "admin" && <Footer compact={true} />}
+    </div>
+  );
+}
+
+function Root() {
+  return (
+    <NiwaErrorBoundary>
+      <ThemeProvider>
+        <LangProvider>
+          <RouterProvider>
+            <CategoriesProvider>
+              <PresetsProvider>
+                <CopyProvider>
+                  <StoreProvider>
+                    <ToastProvider>
+                      <App />
+                    </ToastProvider>
+                  </StoreProvider>
+                </CopyProvider>
+              </PresetsProvider>
+            </CategoriesProvider>
+          </RouterProvider>
+        </LangProvider>
+      </ThemeProvider>
+    </NiwaErrorBoundary>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
+</script>
+</body>
+</html>

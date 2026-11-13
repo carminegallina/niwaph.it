@@ -1,0 +1,29 @@
+# NIWA.PH — Sicurezza cartella uploads
+# Disabilita l'esecuzione di QUALSIASI script in /uploads.
+# Anche se qualcuno riesce a caricare un file con un nome ingannevole
+# come "foto.php.jpg", non potrà mai essere eseguito come PHP.
+
+# Blocca esecuzione PHP / script
+<FilesMatch "\.(php|phtml|phar|pl|py|jsp|asp|sh|cgi)$">
+    Require all denied
+</FilesMatch>
+
+# In Apache 2.4 con PHP-FPM, disattiva l'handler PHP per questa cartella
+<IfModule mod_mime.c>
+    RemoveHandler .php .phtml .phar
+    RemoveType .php .phtml .phar
+    AddType text/plain .php .phtml .phar
+</IfModule>
+
+# Forza Content-Type corretto per immagini/video noti
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+# Nessun listing della directory
+Options -Indexes -ExecCGI
+
+# Permetti solo le estensioni attese
+<FilesMatch "\.(jpg|jpeg|png|webp|mp4|webm|gif)$">
+    Require all granted
+</FilesMatch>
