@@ -66,6 +66,17 @@ AddDefaultCharset UTF-8
     ExpiresByType application/javascript "access plus 1 day"
 </IfModule>
 
+# Pagine e codice dell'app: cache corta con rivalidazione.
+# Il sito si pubblica via FTP e davanti c'e' il proxy di Aruba: senza una
+# regola esplicita l'HTML resta in cache a discrezione del proxy e un
+# caricamento nuovo puo' non vedersi per un pezzo. Le immagini restano a 30
+# giorni qui sopra: sono loro a pesare sulla banda, non queste poche pagine.
+<FilesMatch "\.(html|jsx|js)$">
+    <IfModule mod_headers.c>
+        Header set Cache-Control "max-age=300, must-revalidate"
+    </IfModule>
+</FilesMatch>
+
 # Niente cache per gli endpoint API (sono dinamici)
 # NB: thumb.php si auto-dichiara cacheabile e sovrascrive questa regola.
 <FilesMatch "\.(php)$">
