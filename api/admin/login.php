@@ -4,7 +4,7 @@
  * NIWA.PH — POST /api/admin/login.php
  *
  * Body JSON:
- *   { "username": "carmine", "password": "..." }
+ *   { "username": "admin", "password": "..." }
  *
  * Risposte:
  *   200 { ok:true,  username, display_name }
@@ -19,8 +19,9 @@
  *    evitare timing leak che riveli "username valido vs invalido".
  *  - Gli errori non distinguono "utente sbagliato" da "password sbagliata".
  *  - Rate limit: 5 tentativi falliti per IP in 15 minuti.
- *  - Logout-all: alla nuova autenticazione possiamo invalidare le sessioni
- *    precedenti (commentato sotto, da abilitare se Carmine vuole questa policy).
+ *  - Logout-all: alla nuova autenticazione e' possibile invalidare le sessioni
+ *    precedenti: il codice e' commentato sotto, da abilitare se si vuole
+ *    questa policy.
  */
 
 declare(strict_types=1);
