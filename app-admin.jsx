@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Carmine Gallina - https://github.com/carminegallina */
 /* ================================================================
    NIWA.PH — Admin Page (login-protected, full editor)
    ================================================================

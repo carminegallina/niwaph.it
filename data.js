@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Carmine Gallina - https://github.com/carminegallina */
 /* ================================================================
    NIWA.PH — Static data + i18n + seed media + presets
    ================================================================ */

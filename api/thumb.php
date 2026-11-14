@@ -1,4 +1,5 @@
 <?php
+// Copyright (c) 2026 Carmine Gallina - https://github.com/carminegallina
 /**
  * NIWA.PH — GET /api/thumb.php?src=/uploads/photos/foo.jpg&w=800
  *

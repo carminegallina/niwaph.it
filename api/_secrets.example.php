@@ -1,4 +1,5 @@
 <?php
+// Copyright (c) 2026 Carmine Gallina - https://github.com/carminegallina
 /**
  * Modello per _secrets.php, che contiene le credenziali vere del database
  * e non va versionato.

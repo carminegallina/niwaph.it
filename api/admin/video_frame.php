@@ -1,4 +1,5 @@
 <?php
+// Copyright (c) 2026 Carmine Gallina - https://github.com/carminegallina
 /**
  * NIWA.PH — POST /api/admin/video_frame.php
  *
