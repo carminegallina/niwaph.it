@@ -1,104 +1,107 @@
 # Niwa.ph
 
-Sito portfolio di un fotografo, scritto da zero: niente WordPress, niente framework,
-niente passaggio di build. Frontend React compilato nel browser, API in PHP, MySQL,
-e un pannello di amministrazione da cui si gestiscono foto, video, testi ed eventi.
+**English** · [Italiano](README.it.md)
 
-Online su [niwaph.it](https://www.niwaph.it).
+A photographer's portfolio site, written from scratch: no WordPress, no framework, no
+build step. React frontend compiled in the browser, PHP API, MySQL, and an admin panel
+for managing photos, videos, site copy and events.
 
-## Com'è fatto
+Live at [niwaph.it](https://www.niwaph.it).
+
+## How it is built
 
 | | |
 |---|---|
-| Frontend | React 18 via UMD + Babel standalone, JSX servito così com'è |
-| Stile | CSS scritto a mano, ~2.400 righe, tema chiaro/scuro |
-| Backend | PHP 8, PDO con prepared statement, nessuna dipendenza esterna |
-| Database | MySQL 8, 21 tabelle + 1 vista |
-| Hosting | spazio condiviso Apache, deploy via FTP |
+| Frontend | React 18 via UMD + Babel standalone, JSX served as it is |
+| Styling | hand-written CSS, ~2,400 lines, light and dark theme |
+| Backend | PHP 8, PDO with prepared statements, no external dependencies |
+| Database | MySQL 8, 21 tables + 1 view |
+| Hosting | shared Apache space, deployed over FTP |
 
-**Perché senza build.** L'hosting è uno spazio condiviso con accesso FTP: niente Node,
-niente CI. Un passaggio di build avrebbe voluto dire compilare sul PC e caricare
-artefatti, e un file sbagliato in mezzo sarebbe stato invisibile. Servendo i `.jsx`
-direttamente, quello che sta nel repo è esattamente quello che gira sul server. Il
-prezzo è Babel che compila a ogni caricamento di pagina: accettabile per un sito di
-poche pagine, da rivedere se il peso cresce.
+**Why no build step.** The hosting is a shared space reachable only over FTP: no Node,
+no CI. A build step would have meant compiling on my PC and uploading artifacts, where
+one wrong file in the middle would have been invisible. By serving the `.jsx` files
+directly, what sits in the repository is exactly what runs on the server. The price is
+Babel compiling on every page load: acceptable for a site of a few pages, worth
+revisiting if it grows.
 
-## Cosa fa
+## What it does
 
-- **Galleria** foto e video con filtri per categoria, due viste (griglia e mosaico) e lightbox.
-- **Preset fotografici** — esposizione, contrasto, saturazione, calore, grana, vignettatura, sfumatura — salvati per singolo media e applicati con `filter` CSS, senza ritoccare i file.
-- **Bilingue** italiano/inglese, con i testi del sito modificabili dall'admin.
-- **Pannello admin**: caricamento media, riordino, categorie, preset, eventi, servizi, link social, testi, messaggi ricevuti. Sessioni con token in cookie `HttpOnly`/`SameSite=Strict`, login con limite ai tentativi.
-- **Miniature al volo** (`api/thumb.php`): le foto originali pesano 5-14 MB, la galleria ne serve versioni da 400/800/1600 px tenute in cache su disco. Sulla galleria completa sono 170 MB che diventano 2,2 MB.
-- **Form contatti** con validazione lato server e limite di frequenza.
+- **Gallery** of photos and videos with category filters, two views (grid and mosaic) and a lightbox.
+- **Photo presets** — exposure, contrast, saturation, warmth, grain, vignette, fade — stored per media item and applied with CSS `filter`, without touching the files.
+- **Bilingual** Italian and English, with the site copy editable from the admin panel.
+- **Admin panel**: media upload, reordering, categories, presets, events, services, social links, copy, incoming messages. Sessions use a token in an `HttpOnly`/`SameSite=Strict` cookie, and login attempts are rate limited.
+- **Thumbnails on the fly** (`api/thumb.php`): the originals weigh 5-14 MB, so the gallery serves 400/800/1600 px versions cached on disk. Across the full gallery that turns 170 MB into 2.2 MB.
+- **Contact form** with server-side validation and rate limiting.
 
-## Struttura
+## Layout
 
 ```
-index.html          pagina unica, carica i quattro moduli JSX
-app-core.jsx        router, contesti (tema, lingua, dati), chiamate alle API
-app-shell.jsx       navigazione, card, lightbox, footer
-app-pages.jsx       home, gallerie, chi sono, contatti
-app-admin.jsx       pannello di amministrazione
-data.js             preset, helper, dati demo di esempio
+index.html          single page, loads the four JSX modules
+app-core.jsx        router, contexts (theme, language, data), API calls
+app-shell.jsx       navigation, cards, lightbox, footer
+app-pages.jsx       home, galleries, about, contact
+app-admin.jsx       admin panel
+data.js             presets, helpers, sample demo data
 styles.css
-api/                endpoint pubblici (media, categorie, eventi, contatti...)
-api/admin/          endpoint protetti da sessione
-api/thumb.php       generatore di miniature con cache
-db/schema.sql       schema del database, senza dati
-dev.bat             server di sviluppo locale
-pubblica.ps1        caricamento su hosting via FTPS, con verifica
+api/                public endpoints (media, categories, events, contact...)
+api/admin/          endpoints behind a session
+api/thumb.php       thumbnail generator with on-disk cache
+db/schema.sql       database schema, no data
+dev.bat             local development server
+pubblica.ps1        FTPS upload to the hosting, with verification
 ```
 
-## Avviare in locale
+## Running it locally
 
-Servono PHP 8 con `pdo_mysql` e `gd`, e un MySQL. Su Windows bastano quelli di WAMP o
-XAMPP, non serve avviarne i servizi: `dev.bat` usa direttamente i binari.
+You need PHP 8 with `pdo_mysql` and `gd`, plus a MySQL server. On Windows the binaries
+shipped with WAMP or XAMPP are enough — there is no need to start their services, since
+`dev.bat` calls the binaries directly.
 
 ```
-copy api\_secrets.example.php api\_secrets.php   REM e metti i tuoi dati
-mysql -u root nomedeldb < db\schema.sql
+copy api\_secrets.example.php api\_secrets.php   REM then fill in your own values
+mysql -u root yourdbname < db\schema.sql
 dev.bat
 ```
 
-Il sito risponde su `http://localhost:8000`, il pannello su `/#admin`. I percorsi in
-`dev.bat` puntano a `C:\wamp64`: se la tua installazione sta altrove, cambiali lì.
+The site answers on `http://localhost:8000`, the panel on `/#admin`. The paths in
+`dev.bat` point at `C:\wamp64`: if your installation lives elsewhere, change them there.
 
-Nota: su Windows il PHP di WAMP non ha un elenco di CA, quindi `api/proxy_asset.php`
-(che serve solo ai media di esempio) fallisce in locale con un errore sul certificato.
-Sul server funziona.
+One caveat: on Windows the PHP shipped with WAMP has no CA bundle, so
+`api/proxy_asset.php` (used only by the sample media) fails locally with a certificate
+error. It works on the server.
 
-Senza dati nel database la galleria è vuota — è il comportamento giusto, i media si
-caricano dal pannello admin.
+With an empty database the gallery is empty — that is the correct behaviour, media are
+uploaded from the admin panel.
 
-## Cosa non c'è nel repo, di proposito
+## What is deliberately not in the repository
 
-- **Le foto e i video**: 260 MB di lavoro del fotografo, non sono materiale da repository.
-- **I dati del database**: contengono messaggi ricevuti dai visitatori, sessioni e l'utente amministratore. Lo schema c'è, i dati no.
-- **Le credenziali**: stanno in `api/_secrets.php`, che non è versionato e che il `.htaccess` di `api/` non lascia raggiungere dal web (blocca tutto ciò che inizia con `_`). Il modello è `api/_secrets.example.php`.
+- **The photos and videos**: 260 MB of the photographer's work, not repository material.
+- **The database contents**: they hold messages sent by visitors, sessions and the admin user. The schema is here, the data is not.
+- **The credentials**: they live in `api/_secrets.php`, which is not versioned and which the `.htaccess` in `api/` keeps unreachable from the web (it blocks anything starting with `_`). The template is `api/_secrets.example.php`.
 
-## Note di sicurezza
+## Security notes
 
-Le cose a cui si è fatta attenzione, se interessa il dettaglio:
+The things that got attention, if you want the detail:
 
-- Query solo con prepared statement, `PDO::ATTR_EMULATE_PREPARES` a `false`.
-- Upload verificati con `finfo` ed `exif_imagetype`, non con l'estensione; in `uploads/` l'esecuzione di PHP è disattivata via `.htaccess`, così un `foto.php.jpg` non può girare.
-- `api/thumb.php` accetta solo percorsi dentro `/uploads/photos/` e larghezze da un elenco fisso: niente traversal, niente cache riempibile a piacere.
-- `api/proxy_asset.php` scarica solo da host in whitelist e solo risposte `image/*` o `video/*`.
-- Password dell'amministratore con `password_hash()`, tentativi di accesso limitati per IP.
-- HTTPS forzato, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`.
+- Queries only through prepared statements, with `PDO::ATTR_EMULATE_PREPARES` set to `false`.
+- Uploads validated with `finfo` and `exif_imagetype` rather than by extension; PHP execution is switched off inside `uploads/` via `.htaccess`, so a `photo.php.jpg` cannot run.
+- `api/thumb.php` accepts only paths inside `/uploads/photos/` and widths from a fixed list: no traversal, and no cache an outsider can fill at will.
+- `api/proxy_asset.php` fetches only from whitelisted hosts and only `image/*` or `video/*` responses.
+- The admin password is stored with `password_hash()`, and login attempts are rate limited per IP.
+- HTTPS enforced, plus `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`.
 
-## Pubblicare
+## Deploying
 
-`pubblica.ps1` carica via FTPS i file di `_da-caricare\`, e **dopo ogni file rilegge la
-dimensione dal server e ricarica se non combacia**. Non è prudenza decorativa: questo
-hosting scarta il trasferimento ogni tanto senza segnalarlo, né al client né nella
-risposta — in un caricamento da 9 file ne sono arrivati 3 a zero byte, con il server
-che rispondeva `226 Transfer complete` su tutti.
+`pubblica.ps1` uploads the files in `_da-caricare\` over FTPS and, **after every file,
+reads its size back from the server and re-uploads if it does not match**. That is not
+decorative caution: this hosting occasionally drops a transfer without reporting it,
+neither to the client nor in its response — in one nine-file upload three arrived at
+zero bytes while the server answered `226 Transfer complete` for all of them.
 
-## Licenza
+## Licence
 
-Il codice è sotto licenza [MIT](LICENSE): usalo, modificalo, fanne quello che vuoi.
+The code is under the [MIT](LICENSE) licence: use it, change it, do what you like with it.
 
-Non rientrano nella licenza il marchio Niwa.ph, il logo in `assets/` e le fotografie
-pubblicate sul sito, che restano dell'autore e sono tutelate a parte.
+The licence does not cover the Niwa.ph name, the logo in `assets/` or the photographs
+published on the site, which remain the author's and are protected separately.
